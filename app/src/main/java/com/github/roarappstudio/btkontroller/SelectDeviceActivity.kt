@@ -20,42 +20,36 @@ import com.github.roarappstudio.btkontroller.extraLibraries.CustomGestureDetecto
 import com.github.roarappstudio.btkontroller.senders.KeyboardSender
 
 
-class SelectDeviceActivity: Activity(),KeyEvent.Callback {
+class SelectDeviceActivity : Activity(), KeyEvent.Callback {
 
-    private var autoPairMenuItem : MenuItem? =null
-    private var screenOnMenuItem : MenuItem? =null
+    private var autoPairMenuItem: MenuItem? = null
+    private var screenOnMenuItem: MenuItem? = null
 
-    private var bluetoothStatus : MenuItem? =null
+    private var bluetoothStatus: MenuItem? = null
 
     private lateinit var linearLayout: _LinearLayout
     private var sender: SensorSender? = null
+
     //private var  viewTouchListener : ViewListener? = null
-    private var modifier_checked_state : Int =0
-    private var  rMouseSender : RelativeMouseSender? = null
+    private var modifier_checked_state: Int = 0
+    private var rMouseSender: RelativeMouseSender? = null
 
-    private var rKeyboardSender : KeyboardSender? = null
-
-
+    private var rKeyboardSender: KeyboardSender? = null
 
 
     @SuppressLint("ResourceType")
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-            verticalLayout {
+        verticalLayout {
 
 
-
-                        // justify your toolbar
-
+            // justify your toolbar
 
 
-
-
-
-                linearLayout = this
-                id = 0x69
-                //gravity = Gravity.CENTER
+            linearLayout = this
+            id = 0x69
+            //gravity = Gravity.CENTER
 //                button("TEST") {
 //                    setOnClickListener {
 //                        rMouseSender?.sendTestClick() ?: toast("Not connected")
@@ -64,19 +58,19 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
 //                }
 
 
-
-                textView(){
-                  id= R.id.mouseView
-                  background=getDrawable(R.drawable.view_border)
-
-
-                    text="Trackpad"
-                    gravity=Gravity.CENTER
+            textView() {
+                id = R.id.mouseView
+                background = getDrawable(R.drawable.view_border)
 
 
-                }.lparams(width= matchParent,height = matchParent )
+                text = "Trackpad"
+                gravity = Gravity.CENTER
 
-            }
+
+            }.lparams(width = matchParent, height = matchParent)
+
+        }
+        rKeyboardSender?.sendNullKeys()
 
 
 //        var x= -2047
@@ -114,27 +108,29 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
     }
 
 
-
-
     public override fun onStart() {
         super.onStart()
 
-        bluetoothStatus?.icon=getDrawable(R.drawable.ic_action_app_not_connected)
-        bluetoothStatus?.tooltipText="App not connected via bluetooth"
+        bluetoothStatus?.icon = getDrawable(R.drawable.ic_action_app_not_connected)
+        bluetoothStatus?.tooltipText = "App not connected via bluetooth"
 
 
         val sharedPref = this.getPreferences(Context.MODE_PRIVATE)
 
 
-        BluetoothController.autoPairFlag= sharedPref.getBoolean(getString(R.string.auto_pair_flag),false)
+        BluetoothController.autoPairFlag =
+            sharedPref.getBoolean(getString(R.string.auto_pair_flag), false)
 
-        autoPairMenuItem?.isChecked= sharedPref.getBoolean(getString(R.string.auto_pair_flag),false)
+        autoPairMenuItem?.isChecked =
+            sharedPref.getBoolean(getString(R.string.auto_pair_flag), false)
 
-        screenOnMenuItem?.isChecked= sharedPref.getBoolean(getString(R.string.screen_on_flag),false)
+        screenOnMenuItem?.isChecked =
+            sharedPref.getBoolean(getString(R.string.screen_on_flag), false)
 
-        if(sharedPref.getBoolean(getString(R.string.screen_on_flag),false)) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if (sharedPref.getBoolean(getString(R.string.screen_on_flag), false)) window.addFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
 
 
         val trackPadView = find<View>(R.id.mouseView)
@@ -149,20 +145,18 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
             Log.wtf("weiufhas", "Callback called")
             val mainHandler = Handler(getContext().mainLooper)
 
-            mainHandler.post(object : Runnable{
+            mainHandler.post(object : Runnable {
                 override fun run() {
 
 
-                    rKeyboardSender= KeyboardSender(hidd,device)
+                    rKeyboardSender = KeyboardSender(hidd, device, java.util.concurrent.locks.ReentrantLock())
 
 
-
-
-
-                    val rMouseSender = RelativeMouseSender(hidd,device)
+                    val rMouseSender = RelativeMouseSender(hidd, device)
                     Log.i("TAGdddUI", Thread.currentThread().getName());
                     val viewTouchListener = ViewListener(hidd, device, rMouseSender)
-                    val mDetector = CustomGestureDetector(getContext(), GestureDetectListener(rMouseSender))
+                    val mDetector =
+                        CustomGestureDetector(getContext(), GestureDetectListener(rMouseSender))
 
                     val gTouchListener = object : View.OnTouchListener {
 
@@ -175,9 +169,7 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
                     }
 
 
-
-
-                    val composite : CompositeListener = CompositeListener()
+                    val composite: CompositeListener = CompositeListener()
 
                     composite.registerListener(gTouchListener)
                     composite.registerListener(viewTouchListener)
@@ -189,9 +181,7 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
 
 
                     bluetoothStatus?.icon = getDrawable(R.drawable.ic_action_app_connected)
-                    bluetoothStatus?.tooltipText="App Connected via bluetooth"
-
-
+                    bluetoothStatus?.tooltipText = "App Connected via bluetooth"
 
 
                     //------------trackPadView.setOnTouchListener(viewTouchListener)
@@ -200,12 +190,9 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
             })
 
 
-
-
-
             //========val rMouseSender = RelativeMouseSender(hidd,device)
             //-------this.rMouseSender=rMouseSender
-           //val mDetector = GestureDetector(this, GestureDetectListener(rMouseSender))
+            //val mDetector = GestureDetector(this, GestureDetectListener(rMouseSender))
 
             Log.i("TAGddd", Thread.currentThread().getName());
             //--------------val viewTouchListener = ViewListener(hidd, device, rMouseSender)//=
@@ -236,19 +223,17 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
 //            myView.setOnTouchListener(composite)
 
 
-
-
-         //   sender = SensorSender(hidd, device)
-         //   initSensor()
+            //   sender = SensorSender(hidd, device)
+            //   initSensor()
         }
 
-        BluetoothController.getDisconnector{
+        BluetoothController.getDisconnector {
             val mainHandler = Handler(getContext().mainLooper)
 
             mainHandler.post(object : Runnable {
                 override fun run() {
-                    bluetoothStatus?.icon=getDrawable(R.drawable.ic_action_app_not_connected)
-                    bluetoothStatus?.tooltipText="App not connected via bluetooth"
+                    bluetoothStatus?.icon = getDrawable(R.drawable.ic_action_app_not_connected)
+                    bluetoothStatus?.tooltipText = "App not connected via bluetooth"
                 }
             })
         }
@@ -262,7 +247,6 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
     }
 
 
-
     public override fun onPause() {
         super.onPause()
 
@@ -272,26 +256,28 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
         super.onStop()
         BluetoothController.btHid?.unregisterApp()
 
-        BluetoothController.hostDevice=null
-        BluetoothController.btHid=null
+        BluetoothController.hostDevice = null
+        BluetoothController.btHid = null
     }
 
 
     public override fun onCreateOptionsMenu(menu: Menu?): Boolean {
 
-       // val trackPadView = find<View>(R.id.mouseView)
+        // val trackPadView = find<View>(R.id.mouseView)
 
         menuInflater.inflate(R.menu.select_device_activity_menu, menu)
 
         bluetoothStatus = menu?.findItem(R.id.ble_app_connection_status)
-        autoPairMenuItem= menu?.findItem(R.id.action_autopair)
+        autoPairMenuItem = menu?.findItem(R.id.action_autopair)
 
         screenOnMenuItem = menu?.findItem(R.id.action_screen_on)
         val sharedPref = this.getPreferences(Context.MODE_PRIVATE)
 
-        screenOnMenuItem?.isChecked = sharedPref.getBoolean(getString(R.string.screen_on_flag),false);
-        Log.i("crown","jewel")
-        autoPairMenuItem?.isChecked= sharedPref.getBoolean(getString(R.string.auto_pair_flag),false)
+        screenOnMenuItem?.isChecked =
+            sharedPref.getBoolean(getString(R.string.screen_on_flag), false);
+        Log.i("crown", "jewel")
+        autoPairMenuItem?.isChecked =
+            sharedPref.getBoolean(getString(R.string.auto_pair_flag), false)
 
 
 //        val checkBox = menu?.findItem(R.id.check_modifier_state)?.actionView as CheckBox
@@ -316,20 +302,17 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
 
-        Log.d("keyeventdown_tag","desc is - $event")
+//        Log.d("keyeventdown_tag", "desc is - $event")
 
 
-        if(rKeyboardSender !=null && event !=null) {
+        if (rKeyboardSender != null && event != null) {
             var rvalue: Boolean? = false
-            //rvalue = rKeyboardSender?.sendKeyboard(keyCode, event,modifier_checked_state)
+            rvalue = rKeyboardSender?.sendKeyboard(keyCode, event,modifier_checked_state)
 
             if (rvalue == true) return true
-
-
             else return super.onKeyDown(keyCode, event)
 
-        }
-        else return super.onKeyDown(keyCode, event)
+        } else return super.onKeyDown(keyCode, event)
 
 
     }
@@ -338,19 +321,16 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
 
 
-        Log.d("keyeventup_tag","desc is - $event")
+//        Log.d("keyeventup_tag", "desc is - $event")
 
-        if(rKeyboardSender !=null && event !=null) {
+        if (rKeyboardSender != null && event != null) {
             var rvalue: Boolean? = false
-            rvalue = rKeyboardSender?.sendKeyboard(keyCode, event,modifier_checked_state)
+            rvalue = rKeyboardSender?.sendKeyboard(keyCode, event, modifier_checked_state)
 
             if (rvalue == true) return true
+            else return super.onKeyUp(keyCode, event)
 
-
-            else return super.onKeyDown(keyCode, event)
-
-        }
-        else return super.onKeyUp(keyCode, event)
+        } else return super.onKeyUp(keyCode, event)
 
 
     }
@@ -365,10 +345,8 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
         R.id.action_keyboard -> {
 
 
-
-
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0)
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
 
 
 
@@ -383,20 +361,16 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
 //            if(item.isChecked)
 //                modifier_checked_state=1
 //            else modifier_checked_state=0
-            if(modifier_checked_state==1)
-            {
-                modifier_checked_state=0
-                item.title="(N)"
+//            if (modifier_checked_state == 1) {
+//                modifier_checked_state = 0
+//                item.title = "(N)"
                 rKeyboardSender?.sendNullKeys()
-
-            }
-
-            else
-            {
-                modifier_checked_state=1
-                item.title="(P)"
-
-            }
+//
+//            } else {
+//                modifier_checked_state = 1
+//                item.title = "(P)"
+//
+//            }
 
 
 
@@ -405,14 +379,14 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
         R.id.action_disconnect -> {
 
             BluetoothController.btHid?.disconnect(BluetoothController.hostDevice)
-            bluetoothStatus?.icon=getDrawable(R.drawable.ic_action_app_not_connected)
-            bluetoothStatus?.tooltipText="App not connected via bluetooth"
+            bluetoothStatus?.icon = getDrawable(R.drawable.ic_action_app_not_connected)
+            bluetoothStatus?.tooltipText = "App not connected via bluetooth"
             true
         }
 
         R.id.action_screen_on -> {
             val sharedPref = this?.getPreferences(Context.MODE_PRIVATE)
-            if(item.isChecked) {
+            if (item.isChecked) {
                 item.isChecked = false
 
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -423,10 +397,8 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
                     commit()
                 }
 
-            }
-            else
-            {
-                item.isChecked=true
+            } else {
+                item.isChecked = true
                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
                 with(sharedPref.edit())
@@ -442,9 +414,9 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
 
         R.id.action_autopair -> {
             val sharedPref = this?.getPreferences(Context.MODE_PRIVATE)
-            if(item.isChecked) {
+            if (item.isChecked) {
                 item.isChecked = false
-                BluetoothController.autoPairFlag=false
+                BluetoothController.autoPairFlag = false
 
                 with(sharedPref.edit())
                 {
@@ -452,13 +424,10 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
                     commit()
                 }
 
-            }
-            else
-            {
-                item.isChecked=true
-                BluetoothController.autoPairFlag=true
-                if(BluetoothController.btHid?.getConnectionState(BluetoothController.mpluggedDevice)==0 && BluetoothController.mpluggedDevice!= null && BluetoothController.autoPairFlag ==true)
-                {
+            } else {
+                item.isChecked = true
+                BluetoothController.autoPairFlag = true
+                if (BluetoothController.btHid?.getConnectionState(BluetoothController.mpluggedDevice) == 0 && BluetoothController.mpluggedDevice != null && BluetoothController.autoPairFlag == true) {
                     BluetoothController.btHid?.connect(BluetoothController.mpluggedDevice)
                     //hostDevice.toString()
                 }
@@ -479,7 +448,6 @@ class SelectDeviceActivity: Activity(),KeyEvent.Callback {
             super.onOptionsItemSelected(item)
         }
     }
-
 
 
 }

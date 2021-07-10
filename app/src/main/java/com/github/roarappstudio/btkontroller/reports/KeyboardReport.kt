@@ -6,7 +6,7 @@ import kotlin.experimental.or
 
 @Suppress("EXPERIMENTAL_FEATURE_WARNING")
 inline class KeyboardReport (
-    val bytes: ByteArray = ByteArray(3) {0}
+    val bytes: ByteArray = ByteArray(7) {0}
 ) {
 
 
@@ -84,31 +84,56 @@ inline class KeyboardReport (
         get() = bytes[2]
         set(value) { bytes[2] = value }
 
-//    var key2: Byte
-//        get() = bytes[3]
-//        set(value) { bytes[3] = value }
-//
-//
-//    var key3: Byte
-//        get() = bytes[4]
-//        set(value) { bytes[4] = value }
-//
-//    var key4: Byte
-//        get() = bytes[5]
-//        set(value) { bytes[5] = value }
-//
-//    var key5: Byte
-//        get() = bytes[6]
-//        set(value) { bytes[6] = value }
+    var key2: Byte
+        get() = bytes[3]
+        set(value) { bytes[3] = value }
+
+
+    var key3: Byte
+        get() = bytes[4]
+        set(value) { bytes[4] = value }
+
+    var key4: Byte
+        get() = bytes[5]
+        set(value) { bytes[5] = value }
+
+    var key5: Byte
+        get() = bytes[6]
+        set(value) { bytes[6] = value }
 //
 //    var key6: Byte
 //        get() = bytes[7]
 //        set(value) { bytes[7] = value }
 
     fun reset() = bytes.fill(0)
+    fun addKey(key: Byte): Boolean {
+        var found = false
+        for (i in 2..6) {
+            if (bytes[i] == key) {
+                found = true
+                break
+            } else if (bytes[i] == 0.toByte()) {
+                bytes[i] = key
+                break
+            }
+        }
+        return !found
+    }
+
+    fun delKey(key: Byte): Boolean {
+        var changed = false
+        for (i in 2..6) {
+            if (bytes[i] == key) {
+                changed = true
+                bytes[i] = 0
+                break
+            }
+        }
+        return changed
+    }
 
     companion object {
-        const val ID = 8
+        const val ID = 1
 //        const val KEYCODE_A = 4
 //        const val KEYCODE_B = 5
 //        const val KEYCODE_C = 6
@@ -306,17 +331,34 @@ inline class KeyboardReport (
 
             KeyEvent.KEYCODE_AT to 31,
             KeyEvent.KEYCODE_POUND to 32,
-            KeyEvent.KEYCODE_STAR to 37
+            KeyEvent.KEYCODE_STAR to 37,
 
-
-
-
-
-
-
-
-
-
+            KeyEvent.KEYCODE_BREAK to 0x48,
+            KeyEvent.KEYCODE_MOVE_HOME to 0x4a,
+            KeyEvent.KEYCODE_NUMPAD_DIVIDE to 0x54,
+            KeyEvent.KEYCODE_NUMPAD_MULTIPLY to 0x55,
+            KeyEvent.KEYCODE_NUMPAD_SUBTRACT to 0x56,
+            KeyEvent.KEYCODE_NUMPAD_1 to 0x59,
+            KeyEvent.KEYCODE_NUMPAD_2 to 0x5a,
+            KeyEvent.KEYCODE_NUMPAD_3 to 0x5b,
+            KeyEvent.KEYCODE_NUMPAD_4 to 0x5c,
+            KeyEvent.KEYCODE_NUMPAD_5 to 0x5d,
+            KeyEvent.KEYCODE_NUMPAD_6 to 0x5e,
+            KeyEvent.KEYCODE_NUMPAD_7 to 0x5f,
+            KeyEvent.KEYCODE_NUMPAD_8 to 0x60,
+            KeyEvent.KEYCODE_NUMPAD_9 to 0x61,
+            KeyEvent.KEYCODE_NUMPAD_0 to 0x62,
+            KeyEvent.KEYCODE_NUMPAD_ADD to 0x57,
+            KeyEvent.KEYCODE_CAPS_LOCK to 0x39,
+            KeyEvent.KEYCODE_NUMPAD_ENTER to 0x58,
+            KeyEvent.KEYCODE_MENU to 0x76,
+            KeyEvent.KEYCODE_NUMPAD_DOT to 0x63,
+            KeyEvent.KEYCODE_VOLUME_UP to 0x80,
+            KeyEvent.KEYCODE_VOLUME_DOWN to 0x81,
+            KeyEvent.KEYCODE_VOLUME_MUTE to 0x7f,
+            KeyEvent.KEYCODE_MEDIA_PREVIOUS to 0xea,
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE to 0xe8,
+            KeyEvent.KEYCODE_MEDIA_NEXT to 0xeb
         )
 
 

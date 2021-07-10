@@ -1,18 +1,18 @@
 package com.github.roarappstudio.btkontroller.senders
 
 
-
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothHidDevice
 import android.util.Log
 import android.view.KeyEvent
 import com.github.roarappstudio.btkontroller.reports.KeyboardReport
+import java.util.concurrent.locks.Lock
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class KeyboardSender(
     val hidDevice: BluetoothHidDevice,
-    val host: BluetoothDevice
-
+    val host: BluetoothDevice,
+    val lock: Lock
 ) {
     val keyboardReport = KeyboardReport()
     //val keyPosition : IntArray = IntArray(6){0}
@@ -26,18 +26,87 @@ open class KeyboardSender(
 
     protected open fun customSender(modifier_checked_state: Int) {
         sendKeys()
-        if(modifier_checked_state==0) sendNullKeys()
-        else {
-            keyboardReport.key1=0.toByte()
-            sendKeys()
-        }
+//        if (modifier_checked_state == 0) sendNullKeys()
+//        else {
+//            keyboardReport.key1 = 0.toByte()
+//            sendKeys()
+//        }
     }
 
-    protected open fun setModifiers(event:KeyEvent) {
-        if(event.isShiftPressed) keyboardReport.leftShift=true
-        if(event.isAltPressed) keyboardReport.leftAlt=true
-        if(event.isCtrlPressed) keyboardReport.leftControl=true
-        if(event.isMetaPressed) keyboardReport.leftGui=true
+    protected open fun setKeys(event: KeyEvent): Boolean {
+        val keyDown = event.action == KeyEvent.ACTION_DOWN
+        var changed = false
+        val keyCode = KeyboardReport.KeyEventMap[event.keyCode]
+        // deal with special keys
+        when (event.keyCode) {
+            KeyEvent.KEYCODE_CTRL_LEFT -> {
+                if (keyboardReport.leftControl xor keyDown) {
+                    changed = true
+                }
+                keyboardReport.leftControl = keyDown
+            }
+            KeyEvent.KEYCODE_ALT_LEFT -> {
+                if (keyboardReport.leftAlt xor keyDown) {
+                    changed = true
+                }
+                keyboardReport.leftAlt = keyDown
+            }
+            KeyEvent.KEYCODE_META_LEFT -> {
+                if (keyboardReport.leftGui xor keyDown) {
+                    changed = true
+                }
+                keyboardReport.leftGui = keyDown
+            }
+            KeyEvent.KEYCODE_SHIFT_LEFT -> {
+                if (keyboardReport.leftShift xor keyDown) {
+                    changed = true
+                }
+                keyboardReport.leftShift = keyDown
+            }
+            KeyEvent.KEYCODE_CTRL_RIGHT -> {
+                if (keyboardReport.rightControl xor keyDown) {
+                    changed = true
+                }
+                keyboardReport.rightControl = keyDown
+            }
+            KeyEvent.KEYCODE_ALT_RIGHT -> {
+                if (keyboardReport.rightAlt xor keyDown) {
+                    changed = true
+                }
+                keyboardReport.rightAlt = keyDown
+            }
+            KeyEvent.KEYCODE_META_RIGHT -> {
+                if (keyboardReport.rightGui xor keyDown) {
+                    changed = true
+                }
+                keyboardReport.rightGui = keyDown
+            }
+            KeyEvent.KEYCODE_SHIFT_RIGHT -> {
+                if (keyboardReport.rightShift xor keyDown) {
+                    changed = true
+                }
+                keyboardReport.rightShift = keyDown
+            }
+            else -> {
+                // deal with normal keys
+                if (keyDown) {
+                    if (keyCode != null) {
+                        changed = keyboardReport.addKey(keyCode.toByte())
+//                        Log.d("mky", "add key" + keyCode.toByte() + changed)
+                    } else {
+                        Log.d("mky", "null key:$event")
+                    }
+                } else {
+                    if (keyCode != null) {
+                        changed = keyboardReport.delKey(keyCode.toByte())
+//                        Log.d("mky", "del key" + keyCode.toByte() + changed)
+                    } else {
+                        Log.d("mky", "null key:$event")
+                    }
+                }
+            }
+        }
+        return changed
     }
 
     fun sendNullKeys() {
@@ -47,37 +116,30 @@ open class KeyboardSender(
         }
     }
 
-    fun keyEventHandler(keyEventCode: Int, event : KeyEvent, modifier_checked_state: Int,keyCode:Int): Boolean{
-
-
-        val byteKey = KeyboardReport.KeyEventMap[keyEventCode]
-
-        if(byteKey!=null)
-        {
-            setModifiers(event)
-            if(event.keyCode== KeyEvent.KEYCODE_AT || event.keyCode== KeyEvent.KEYCODE_POUND || event.keyCode== KeyEvent.KEYCODE_STAR)
-            {
-                keyboardReport.leftShift=true
-            }
-            keyboardReport.key1=byteKey.toByte()
+    fun keyEventHandler(
+        keyEventCode: Int,
+        event: KeyEvent,
+        modifier_checked_state: Int,
+        keyCode: Int
+    ): Boolean {
+//        lock.lock()
+        val changed = setKeys(event)
+//            if (event.keyCode == KeyEvent.KEYCODE_AT || event.keyCode == KeyEvent.KEYCODE_POUND || event.keyCode == KeyEvent.KEYCODE_STAR) {
+//                keyboardReport.leftShift = true
+//            }
+//            keyboardReport.key1 = byteKey.toByte()
+        if (changed) {
             customSender(modifier_checked_state)
-
-            return true
         }
-        else
-        {
-            return false
-        }
-
-
-
+//        lock.unlock()
+        return true
     }
 
 
-    fun sendKeyboard(keyCode : Int, event : KeyEvent, modifier_checked_state :Int): Boolean {
+    fun sendKeyboard(keyCode: Int, event: KeyEvent, modifier_checked_state: Int): Boolean {
 
 
-        return keyEventHandler(event.keyCode,event,modifier_checked_state,keyCode)
+        return keyEventHandler(event.keyCode, event, modifier_checked_state, keyCode)
 
 
 //        return when (event.keyCode) {
@@ -110,10 +172,6 @@ open class KeyboardSender(
 //        }
 
     }
-
-
-
-
 
 
 //fun sendTestMouseMove() {
@@ -216,8 +274,6 @@ open class KeyboardSender(
 //
 //
 //}
-
-
 
 
     companion object {
